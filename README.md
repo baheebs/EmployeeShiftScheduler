@@ -12,6 +12,7 @@ This project is an Employee Shift Management System built with Django, Celery, a
 
 Celery run
 celery -A shift_management.celery worker --pool=solo -l info
+
 celery -A shift_management beat -l info
 
 
