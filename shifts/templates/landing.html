@@ -1,0 +1,44 @@
+{% extends 'layouts/root.html' %}
+
+
+{% block content %}
+<div class="col-md-10">
+    <!-- Main content starts here -->
+    <div class="landing-content">
+        <h1 class="text-center">Welcome to the Employee Management System</h1>
+        <p class="text-center">Manage your employees and their schedules efficiently with our system.</p>
+        
+        <div class="features">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <i class="icon-user-following icon"></i>
+                        <h4>Manage Employees</h4>
+                        <p>Keep track of your employees' information and status.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <i class="icon-calendar icon"></i>
+                        <h4>Schedule Shifts</h4>
+                        <p>Easily create and manage employee schedules.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <i class="icon-docs icon"></i>
+                        <h4>Generate Reports</h4>
+                        <p>Generate comprehensive reports on employee schedules and performance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'login' %}" class="btn btn-primary">Get Started</a>
+        </div>
+    </div>
+    <!-- Main content ends here -->
+</div>
+
+{% endblock %}

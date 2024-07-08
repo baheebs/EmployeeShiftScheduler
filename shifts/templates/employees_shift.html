@@ -1,0 +1,188 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Employee Shifts</h4>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#basicModal">Assign Shift</button>
+                <!-- Modal -->
+                <div class="modal fade" id="basicModal">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Assign Shift</h5>
+                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" id="shiftForm" action="{% url 'employees_shift' %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="employee">Employee</label>
+                                        <select class="multi-select" id="employee" name="employee_ids[]" multiple="multiple" required>
+                                            {% for employee in employees %}
+                                                <option value="{{ employee.employee_id }}">{{ employee.full_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="location">Location</label>
+                                        <select class="form-control" id="location" name="location" required>
+                                            <option value="">Select Location</option>
+                                            {% for location in locations %}
+                                                <option value="{{ location.id }}">{{ location.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="start_date">Start Date</label>
+                                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="end_date">End Date</label>
+                                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="from_time">From Time</label>
+                                        <input type="time" class="form-control" id="from_time" name="from_time" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="to_time">To Time</label>
+                                        <input type="time" class="form-control" id="to_time" name="to_time" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary" id="submit-btn">Save Shift</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped verticle-middle table-responsive-sm">
+                        <thead>
+                            <tr class="text-dark font-weight-bold">
+                                <th scope="col">Employee</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">From Time</th>
+                                <th scope="col">To Time</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for shift in employee_shifts %}
+                            <tr class="text-dark">
+                                <td>{{ shift.employee.full_name }}</td>
+                                <td>{{ shift.location.name }}</td>
+                                <td>{{ shift.date }}</td>
+                                <td>{{ shift.from_time }}</td>
+                                <td>{{ shift.to_time }}</td>
+                                <td>
+                                    <span>
+                                        <a href="javascript:void()" class="delete-btn" data-shift-id="{{ shift.id }}"
+                                           title="Delete">
+                                           <i class="fa fa-close text-danger"></i>
+                                        </a>
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No shifts found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        // Function to clear form fields
+        function clearFormFields() {
+            $('#shiftForm').trigger("reset");
+            $('#shiftForm').find('.is-invalid').removeClass('is-invalid');
+        }
+
+        // Handle modal hidden event to clear form fields
+        $('#basicModal').on('hidden.bs.modal', function () {
+            clearFormFields();
+            $('#shiftForm').find('.is-invalid').removeClass('is-invalid');
+        });
+
+        document.getElementById('shiftForm').onsubmit = async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const employeeIds = $('#employee').val();
+            const data = {
+                employee_ids: employeeIds,
+                location: formData.get('location'),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date'),
+                from_time: formData.get('from_time'),
+                to_time: formData.get('to_time')
+            };
+
+            const response = await fetch("{% url 'employees_shift' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            window.location.reload();
+        };
+
+        // Handle delete button click
+        $('.delete-btn').click(function () {
+            var shiftId = $(this).data('shift-id');
+            if (confirm('Are you sure you want to delete this shift?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/employees_shift/delete/' + shiftId + '/',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            showAlert('danger', 'Failed to delete employee');
+                        }
+                    },
+                    error: function () {
+                        showAlert('danger', 'Error deleting employee');
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

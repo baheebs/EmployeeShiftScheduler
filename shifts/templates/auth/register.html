@@ -1,0 +1,65 @@
+{% extends 'layouts/root.html' %}
+
+
+{% block content %}
+<div class="col-md-6" style="margin-top: 80px;">
+    <div class="authincation-content">
+        <div class="row no-gutters">
+            <div class="col-xl-12">
+                <div class="auth-form">
+                    <h4 class="text-center mb-4">Sign up your account</h4>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="name-input">Name</label>
+                            <input type="text" class="form-control {% if form.name.errors %}is-invalid{% endif %}" id="name-input" name="name" required>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.name.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="email-input">Email</label>
+                            <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="email-input" name="email" required>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.email.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="password-input">Password</label>
+                            <input type="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" id="password-input" name="password" required>
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.password.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label for="c-password-input">Confirm Password</label>
+                            <input type="password" class="form-control {% if form.c_password.errors %}is-invalid{% endif %}" id="c-password-input" name="c_password" required>
+                            {% if form.c_password.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.c_password.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-block">Sign me up</button>
+                        </div>
+                    </form>
+                    <div class="new-account mt-3">
+                        <p>Already have an account? <a class="text-primary" href="{% url 'login' %}">Sign in</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

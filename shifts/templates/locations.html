@@ -1,0 +1,193 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Locations</h4>
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#basicModal">Create
+                    Location</button>
+                <!-- Modal -->
+                <div class="modal fade" id="basicModal">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Location</h5>
+                                <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" id="locationForm">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="id_name">Name</label>
+                                        <input type="text" class="form-control" id="id_name" name="name" required>
+                                        <div class="invalid-feedback"></div> <!-- Error message container -->
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="submit-btn">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped verticle-middle table-responsive-sm">
+                        <thead>
+                            <tr class="text-dark font-weight-bold">
+                                <th scope="col">Name</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for location in locations %}
+                            <tr class="text-dark">
+                                <td>{{ location.name }}</td>
+                                <td>
+                                    <span>
+                                        <a href="javascript:void(0)" class="mr-3 edit-btn" data-toggle="modal" data-target="#basicModal"
+                                           data-id="{{ location.id }}" data-name="{{ location.name }}" title="Edit">
+                                            <i class="fa fa-pencil text-muted"></i>
+                                        </a>
+                                        <a href="javascript:void()" data-toggle="tooltip" class="mr-3 delete-btn" data-id="{{ location.id }}"
+                                            data-placement="top" title="Delete"><i class="fa fa-close text-danger"></i>
+                                        </a>
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No locations found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var isEditMode = false;
+        var editLocationId = null;
+
+        // Function to clear form fields
+        function clearFormFields() {
+            $('#locationForm').trigger("reset");
+            $('#locationForm').find('.is-invalid').removeClass('is-invalid');
+            isEditMode = false;
+            editLocationId = null;
+        }
+
+        // Handle modal hidden event to clear form fields
+        $('#basicModal').on('hidden.bs.modal', function () {
+            clearFormFields();
+            $('#locationForm').find('.is-invalid').removeClass('is-invalid');
+        });
+
+         // Handle edit button click
+        $('.edit-btn').click(function () {
+            var button = $(this);
+            var form = $('#locationForm');
+
+            // Set form action to update URL and populate form with existing data
+            $('#modalTitle').text('Edit Department');
+            form.find('#id_name').val(button.data('name'));
+            
+            isEditMode = true;
+            editLocationId = button.data('id');
+        });
+
+        $('#submit-btn').click(function (e) {
+            e.preventDefault();
+            var form = $('#locationForm');
+            var url = isEditMode ? '/locations/update/' + editLocationId + '/' : form.attr('action');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serialize(),
+                success: function (data) {
+                    if (data.success) {
+                        var url = new URL(window.location.href);
+                        window.location.href = url.toString();
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        var errors = JSON.parse(xhr.responseJSON.errors);
+                        handleValidationErrors(errors, form);
+                    } else {
+                        $('#basicModal').modal('hide');
+                        $('.modal-backdrop').remove();
+                        showAlert('danger', 'Error submitting form');
+                    }
+                }
+            });
+        });
+
+        function handleValidationErrors(errors, form) {
+            form.find('.is-invalid').removeClass('is-invalid');
+            form.find('.invalid-feedback').text('');
+            $.each(errors, function (field, messages) {
+                var input = form.find('[name="' + field + '"]');
+                input.addClass('is-invalid');
+                input.siblings('.invalid-feedback').text(messages[0].message);
+            });
+        }
+
+        function showAlert(type, message) {
+            var alertHtml = `
+                <div class=" col-md-11 alert alert-${type} alert-dismissible fade show text-dark" role="alert">
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `
+
+            $('#alertContainer').html(alertHtml);
+            setTimeout(function () {
+                $('#alertContainer').html('');
+            }, 5000);
+        }
+
+        // Handle delete button click
+        $('.delete-btn').click(function () {
+            var locationId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this location?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/locations/delete/' + locationId + '/',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            showAlert('danger', 'Failed to delete location');
+                        }
+                    },
+                    error: function () {
+                        showAlert('danger', 'Error deleting location');
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

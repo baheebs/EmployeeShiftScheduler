@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Employee Management System</title>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+
+</head>
+
+<body class="h-100">
+    <div class="authincation h-100">
+        <div class="container-fluid h-100">
+            <div class="row justify-content-center h-100 align-items-center">
+                <div class="header p-0 m-0">
+                    <div class="header-content pr-5 pl-5">
+                        <nav class="navbar navbar-expand">
+                            <div class="collapse navbar-collapse justify-content-center">
+                                <div class="header-left">
+                                    <ul class="navbar-nav mr-auto d-flex justify-content-center">
+                                        <li class="nav-item active mr-5">
+                                            <a class="nav-link" href="#">Home</a>
+                                        </li>
+                                        <li class="nav-item mr-5">
+                                            <a class="nav-link" href="#">About Us</a>
+                                        </li>
+                                        <li class="nav-item mr-5">
+                                            <a class="nav-link" href="#">Contact Us</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="{% static '/vendor/global/global.min.js' %}"></script>
+    <script src="{% static '/js/quixnav-init.js' %}"></script>
+    <script src="{% static '/js/custom.min.js' %}"></script>
+
+</body>
+
+</html>
